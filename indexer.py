@@ -8,27 +8,31 @@ def mergeContents(contents: dict, newContents: dict) -> dict:
         contents[newObject].extend(newContents[newObject])
     return contents
 
-def idenfity_fsObjet(fsObject: WindowsPath):
-    pass
-
 def recursiveIndex(root: str) -> dict:
     root: WindowsPath = Path(root)
     fsContents: dict = {}
 
-    # Too deep please fix < 5 indents
-    for fsObject in root.iterdir():
-        fName: str = str(fsObject.name).lower()
-        try:
-            if fsObject.is_file():
-                if fName not in fsContents:
-                    fsContents[fName] = []
-                fsContents[fName].append(str(fsObject))
+    def handleObject(fsObject: WindowsPath, fsContents: dict):
+        fName: str = str(fsObject.name)
 
-            if fsObject.is_dir():
-                newContents: dict = recursiveIndex(str(fsObject))
-                fsContents: dict = mergeContents(fsContents, newContents)
+        # Early return to avoid extra indent 
+        if fsObject.is_dir():
+            newContents: dict = recursiveIndex(str(fsObject))
+            fsContents = mergeContents(fsContents, newContents)
+            return fsContents
+
+        if not fName in fsContents:
+            fsContents[fName] = []
+            fsContents[fName].append(str(fsObject)) 
+
+        return fsContents
+
+    for fsObject in root.iterdir():
+        try:
+            fsContents = handleObject(fsObject, fsContents)
         except Exception as err:
-            print(f"{err}")
+            print(f"{err:>256}", end="\r")
+
     return fsContents
 
 def refreshIndex(root: str) -> dict:

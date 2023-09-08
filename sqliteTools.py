@@ -10,8 +10,8 @@ def searchIndex(searchTerm: str, dbName: str = "index.db") -> list:
     db: sqlite3.Cursor = connect(dbName)
 
     # This is horrible pleas# This is hrorrible please fix
-    rawResults: list = db.execute(f"SELECT FS.paths FROM Filesystem AS FS WHERE FS.filename = '{searchTerm}'").fetchall()
-    results: list = decompress(rawResults[0][0]).split("-_-_")
+    rawResults: list = db.execute(f"SELECT FS.paths FROM Filesystem AS FS WHERE FS.filename = '{searchTerm}'").fetchone()
+    results: list = decompress(rawResults[0]).split("<new>")
 
     return results
 
@@ -24,7 +24,7 @@ def makeIndex(filesystem: dict, dbName: str = "index.db"):
     db.execute("Begin;")
     for fsObject in filesystem:
         try:
-            paths: str = "-_-_".join(filesystem[fsObject])
+            paths: str = "<new>".join(filesystem[fsObject])
             paths: bytes = compress(paths)
             statement: str = "INSERT inTO Filesystem (filename, paths) VALUES (?, ?)"
             db.execute(statement, (fsObject, paths))
